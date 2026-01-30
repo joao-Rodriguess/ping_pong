@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Face Expression Detector - Camera Games</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/control_utils/control_utils.js"
+        crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js"
+        crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.js" crossorigin="anonymous"></script>
+</head>
+
+<body>
+    <div class="game-container">
+        <div class="game-header">
+            <h1>🎭 Expression Detector</h1>
+        </div>
+
+        <div id="expressionDisplay" class="expression-display">
+            <div id="emoji" style="font-size: 12rem; font-weight: 200; font-family: Arial, sans-serif; line-height: 1;">
+                ○</div>
+            <div id="label" class="expression-label">NEUTRO</div>
+            <div id="confidence"
+                style="font-size: 1rem; color: rgba(232,234,237,0.6); margin-top: 1rem; font-family: 'Inter', sans-serif; font-weight: 300;">
+                0% confiança</div>
+        </div>
+
+        <div class="game-wrapper">
+            <canvas id="faceCanvas" width="800" height="600"></canvas>
+            <video class="input_video" style="display: none;"></video>
+        </div>
+
+        <div class="controls-overlay" id="controls">
+            <h3>Como Funciona</h3>
+            <p>🎭 Faça diferentes expressões faciais</p>
+            <p>🤖 A IA detectará suas emoções</p>
+            <p>✨ Tente todas as expressões!</p>
+            <button class="btn" id="startBtn">Iniciar</button>
+        </div>
+
+        <div
+            style="position: fixed; top: 2rem; right: 2rem; background: rgba(15,15,23,0.8); padding: 1.2rem; border-radius: 12px; border: 2px solid rgba(232,234,237,0.15); backdrop-filter: blur(15px); z-index: 1000;">
+            <h3
+                style="font-family: Orbitron; font-size: 1rem; margin-bottom: 0.8rem; color: #00d9ff; font-weight: 700;">
+                Histórico</h3>
+            <div id="history" style="font-size: 0.9rem; color: rgba(232,234,237,0.7);"></div>
+        </div>
+
+        <div class="video-preview">
+            <canvas class="output_canvas" width="240" height="180"></canvas>
+        </div>
+    </div>
+
+    <script src="shared.js"></script>
+    <script src="face-detector.js"></script>
+</body>
+
+</html>

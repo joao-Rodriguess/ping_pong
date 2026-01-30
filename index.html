@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portal de Jogos Interativos - Camera AI</title>
+    <meta name="description" content="Portal de jogos interativos controlados por câmera usando IA">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div class="landing-container">
+        <header class="landing-header">
+            <h1>🎮 Camera Games</h1>
+            <p>Jogos interativos controlados pela sua câmera e IA</p>
+        </header>
+
+        <div class="games-grid">
+            <!-- Space Shooter -->
+            <a href="space-shooter.html" class="game-card space">
+                <span class="game-icon">🚀</span>
+                <h2>Space Shooter</h2>
+                <p>Atire em naves inimigas usando gestos da mão!</p>
+                <ul class="features">
+                    <li>Controle com movimento da mão</li>
+                    <li>Gesto de apontar para atirar</li>
+                    <li>Efeitos de partículas épicos</li>
+                    <li>Sistema de score e vidas</li>
+                </ul>
+            </a>
+
+            <!-- Drawing Studio -->
+            <a href="drawing-studio.html" class="game-card draw">
+                <span class="game-icon">🎨</span>
+                <h2>Drawing Studio</h2>
+                <p>Desenhe com a mão e tire fotos incríveis!</p>
+                <ul class="features">
+                    <li>Desenho com dedo indicador</li>
+                    <li>Paleta de cores vibrantes</li>
+                    <li>Captura de foto com desenho</li>
+                    <li>Download da sua arte</li>
+                </ul>
+            </a>
+
+            <!-- Face Expression Detector -->
+            <a href="face-detector.html" class="game-card face">
+                <span class="game-icon">🎭</span>
+                <h2>Expression Detector</h2>
+                <p>Detecta e mostra suas expressões faciais!</p>
+                <ul class="features">
+                    <li>Reconhecimento de emoções</li>
+                    <li>Mostra expressões em tempo real</li>
+                    <li>Feedback visual e sonoro</li>
+                </ul>
+            </a>
+
+            <!-- Fruit Ninja -->
+            <a href="fruit-ninja.html" class="game-card fruit">
+                <span class="game-icon">🍓</span>
+                <h2>Fruit Ninja</h2>
+                <p>Corte as frutas usando gestos da mão!</p>
+                <ul class="features">
+                    <li>Controle com movimento da mão</li>
+                    <li>Gesto de apontar para atirar</li>
+                    <li>Efeitos de partículas épicos</li>
+                    <li>Sistema de score e vidas</li>
+                </ul>
+            </a>
+        </div>
+
+        <script>
+            // Add subtle particle background animation
+            const createStars = () => {
+                const stars = document.createElement('div');
+                stars.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                pointer-events: none;
+                z-index: 0;
+            `;
+
+                for (let i = 0; i < 50; i++) {
+                    const star = document.createElement('div');
+                    star.style.cssText = `
+                    position: absolute;
+                    width: 2px;
+                    height: 2px;
+                    background: white;
+                    border-radius: 50%;
+                    top: ${Math.random() * 100}%;
+                    left: ${Math.random() * 100}%;
+                    opacity: ${Math.random() * 0.5 + 0.2};
+                    animation: twinkle ${Math.random() * 3 + 2}s infinite;
+                `;
+                    stars.appendChild(star);
+                }
+
+                document.body.appendChild(stars);
+            };
+
+            const style = document.createElement('style');
+            style.textContent = `
+            @keyframes twinkle {
+                0%, 100% { opacity: 0.2; }
+                50% { opacity: 0.8; }
+            }
+        `;
+            document.head.appendChild(style);
+
+            createStars();
+        </script>
+</body>
+
+</html>

@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Space Shooter - Camera Games</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/control_utils/control_utils.js"
+        crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js"
+        crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
+</head>
+
+<body>
+    <div class="game-container">
+        <div class="game-header">
+            <h1>🚀 Space Shooter</h1>
+        </div>
+
+        <div id="scoreDisplay" class="score-display">Score: 0</div>
+        <div id="livesDisplay"
+            style="position: fixed; top: 6rem; right: 2rem; font-family: 'Orbitron'; font-size: 1.5rem; color: #ff0055; z-index: 1000;">
+            ❤️ x 3</div>
+
+        <div class="game-wrapper">
+            <canvas id="gameCanvas" width="800" height="600"></canvas>
+        </div>
+
+        <div class="controls-overlay" id="controls">
+            <h3>Como Jogar</h3>
+            <p>✋ Mova a mão para controlar a nave</p>
+            <p>👉 Aponte o dedo para atirar</p>
+            <button class="btn" id="startBtn">Iniciar Jogo</button>
+        </div>
+
+        <div class="video-preview">
+            <video class="input_video" style="display: none;"></video>
+            <canvas class="output_canvas" width="240" height="180"></canvas>
+        </div>
+    </div>
+
+    <script src="shared.js"></script>
+    <script src="space-shooter.js"></script>
+</body>
+
+</html>

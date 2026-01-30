@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Drawing Studio - Camera Games</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/control_utils/control_utils.js"
+        crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js"
+        crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
+</head>
+
+<body>
+    <div class="game-container">
+        <div class="game-header">
+            <h1>🎨 Drawing Studio</h1>
+        </div>
+
+        <div
+            style="position: fixed; top: 2rem; right: 2rem; z-index: 1000; display: flex; gap: 1rem; flex-direction: column; align-items: flex-end;">
+            <div class="color-palette" id="colorPalette">
+                <button class="color-btn active" data-color="#ff0055" style="background: #ff0055;"></button>
+                <button class="color-btn" data-color="#00f3ff" style="background: #00f3ff;"></button>
+                <button class="color-btn" data-color="#b537ff" style="background: #b537ff;"></button>
+                <button class="color-btn" data-color="#00ff88" style="background: #00ff88;"></button>
+                <button class="color-btn" data-color="#ffff00" style="background: #ffff00;"></button>
+                <button class="color-btn" data-color="#ffffff" style="background: #ffffff;"></button>
+            </div>
+            <div style="display: flex; gap: 0.5rem;">
+                <button class="btn" id="clearBtn" style="padding: 0.5rem 1rem; font-size: 0.9rem;">Limpar</button>
+                <button class="btn btn-secondary" id="photoBtn" style="padding: 0.5rem 1rem; font-size: 0.9rem;">📸
+                    Foto</button>
+            </div>
+        </div>
+
+        <div class="game-wrapper">
+            <canvas id="drawingCanvas" width="800" height="600"></canvas>
+            <video class="input_video" style="display: none;"></video>
+        </div>
+
+        <div class="controls-overlay" id="controls">
+            <h3>Como Usar</h3>
+            <p>✋ Feche o polegar e indicador para desenhar</p>
+            <p>🎨 Escolha cores acima</p>
+            <p>📸 Tire uma foto do seu desenho</p>
+            <button class="btn" id="startBtn">Iniciar</button>
+        </div>
+
+        <div class="video-preview">
+            <canvas class="output_canvas" width="240" height="180"></canvas>
+        </div>
+    </div>
+
+    <script src="shared.js"></script>
+    <script src="drawing-studio.js"></script>
+</body>
+
+</html>
