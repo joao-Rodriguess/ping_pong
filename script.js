@@ -20,6 +20,7 @@ let aiScore = 0;
 function resizeCanvas() {
     gameCanvas.width = 800;
     gameCanvas.height = 600;
+    
 }
 resizeCanvas();
 
