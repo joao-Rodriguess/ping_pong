@@ -25,6 +25,14 @@
             style="position: fixed; top: 6rem; right: 2rem; font-family: 'Orbitron'; font-size: 1.5rem; color: #ff0055; z-index: 1000;">
             ❤️ x 3</div>
 
+        <!-- Barra de Vida do Chefão (Boss) -->
+        <div id="bossUI" class="boss-health-bar-container">
+            <div class="boss-health-bar-label">👾 CHEFE: DESTRUIDOR NEON</div>
+            <div style="background: rgba(255, 255, 255, 0.1); border-radius: 3px; height: 12px; overflow: hidden;">
+                <div id="bossBar" class="boss-health-bar"></div>
+            </div>
+        </div>
+
         <div class="game-wrapper">
             <canvas id="gameCanvas" width="800" height="600"></canvas>
         </div>

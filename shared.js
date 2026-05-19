@@ -181,6 +181,234 @@ function random(min, max) {
     return Math.random() * (max - min) + min;
 }
 
+// Web Audio API Synth for futuristic sound effects
+const Sound = {
+    ctx: null,
+
+    init() {
+        if (!this.ctx) {
+            this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+        if (this.ctx.state === 'suspended') {
+            this.ctx.resume();
+        }
+    },
+
+    // Play a futuristic laser sound
+    playLaser() {
+        try {
+            this.init();
+            const ctx = this.ctx;
+            const now = ctx.currentTime;
+
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+
+            osc.type = 'sawtooth';
+            osc.frequency.setValueAtTime(800, now);
+            osc.frequency.exponentialRampToValueAtTime(100, now + 0.15);
+
+            gain.gain.setValueAtTime(0.15, now);
+            gain.gain.exponentialRampToValueAtTime(0.01, now + 0.15);
+
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+
+            osc.start(now);
+            osc.stop(now + 0.15);
+        } catch (e) {
+            console.warn('Audio error:', e);
+        }
+    },
+
+    // Play an explosion sound (noise-based or simple deep pitch shift)
+    playExplosion() {
+        try {
+            this.init();
+            const ctx = this.ctx;
+            const now = ctx.currentTime;
+
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(200, now);
+            osc.frequency.exponentialRampToValueAtTime(10, now + 0.4);
+
+            gain.gain.setValueAtTime(0.3, now);
+            gain.gain.linearRampToValueAtTime(0.01, now + 0.4);
+
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+
+            osc.start(now);
+            osc.stop(now + 0.4);
+
+            // Add high-pitch snap for metallic effect
+            const osc2 = ctx.createOscillator();
+            const gain2 = ctx.createGain();
+            osc2.type = 'sine';
+            osc2.frequency.setValueAtTime(1000, now);
+            osc2.frequency.exponentialRampToValueAtTime(300, now + 0.1);
+            gain2.gain.setValueAtTime(0.1, now);
+            gain2.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
+            osc2.connect(gain2);
+            gain2.connect(ctx.destination);
+            osc2.start(now);
+            osc2.stop(now + 0.1);
+        } catch (e) {
+            console.warn('Audio error:', e);
+        }
+    },
+
+    // Play a sharp lightsaber swoosh sound
+    playSwoosh() {
+        try {
+            this.init();
+            const ctx = this.ctx;
+            const now = ctx.currentTime;
+
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(150, now);
+            osc.frequency.linearRampToValueAtTime(300, now + 0.12);
+            osc.frequency.linearRampToValueAtTime(120, now + 0.25);
+
+            gain.gain.setValueAtTime(0.01, now);
+            gain.gain.linearRampToValueAtTime(0.15, now + 0.05);
+            gain.gain.exponentialRampToValueAtTime(0.01, now + 0.25);
+
+            // Low-pass filter for deeper saber sound
+            const filter = ctx.createBiquadFilter();
+            filter.type = 'lowpass';
+            filter.frequency.value = 800;
+
+            osc.connect(filter);
+            filter.connect(gain);
+            gain.connect(ctx.destination);
+
+            osc.start(now);
+            osc.stop(now + 0.25);
+        } catch (e) {
+            console.warn('Audio error:', e);
+        }
+    },
+
+    // Play a wet squishy slice sound for fruit slicing
+    playSlice() {
+        try {
+            this.init();
+            const ctx = this.ctx;
+            const now = ctx.currentTime;
+
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(1200, now);
+            osc.frequency.exponentialRampToValueAtTime(200, now + 0.15);
+
+            gain.gain.setValueAtTime(0.2, now);
+            gain.gain.exponentialRampToValueAtTime(0.01, now + 0.15);
+
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+
+            osc.start(now);
+            osc.stop(now + 0.15);
+        } catch (e) {
+            console.warn('Audio error:', e);
+        }
+    },
+
+    // Play a powerup collect sound (arpeggio)
+    playPowerup() {
+        try {
+            this.init();
+            const ctx = this.ctx;
+            const now = ctx.currentTime;
+
+            const notes = [261.63, 329.63, 392.00, 523.25]; // C4, E4, G4, C5
+            notes.forEach((freq, idx) => {
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.type = 'sine';
+                osc.frequency.value = freq;
+                gain.gain.setValueAtTime(0.05, now + idx * 0.08);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.08 + 0.2);
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.start(now + idx * 0.08);
+                osc.stop(now + idx * 0.08 + 0.2);
+            });
+        } catch (e) {
+            console.warn('Audio error:', e);
+        }
+    },
+
+    // Play camera shutter sound
+    playShutter() {
+        try {
+            this.init();
+            const ctx = this.ctx;
+            const now = ctx.currentTime;
+
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(800, now);
+            osc.frequency.setValueAtTime(200, now + 0.05);
+
+            gain.gain.setValueAtTime(0.15, now);
+            gain.gain.exponentialRampToValueAtTime(0.01, now + 0.15);
+
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+
+            osc.start(now);
+            osc.stop(now + 0.15);
+        } catch (e) {
+            console.warn('Audio error:', e);
+        }
+    },
+
+    // Play simple futuristic beep
+    playBeep(freq = 600, duration = 0.08) {
+        try {
+            this.init();
+            const ctx = this.ctx;
+            const now = ctx.currentTime;
+
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+
+            osc.type = 'sine';
+            osc.frequency.value = freq;
+
+            gain.gain.setValueAtTime(0.08, now);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + duration);
+
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+
+            osc.start(now);
+            osc.stop(now + duration);
+        } catch (e) {
+            console.warn('Audio error:', e);
+        }
+    }
+};
+
+// Auto initialize on click so browser permits audio playback
+window.addEventListener('click', () => {
+    try {
+        Sound.init();
+    } catch(e) {}
+}, { once: true });
+
 // Export for use in other files
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = {
@@ -195,6 +423,7 @@ if (typeof module !== 'undefined' && module.exports) {
         createScoreDisplay,
         distance,
         rectCollision,
-        random
+        random,
+        Sound
     };
 }

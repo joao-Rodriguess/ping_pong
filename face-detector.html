@@ -42,6 +42,109 @@
             <button class="btn" id="startBtn">Iniciar</button>
         </div>
 
+        <!-- Painel de Telemetria Facial -->
+        <div class="expression-analysis-panel" id="analysisPanel">
+            <h3>Telemetria Facial</h3>
+            
+            <div class="analysis-bar-wrapper">
+                <div class="analysis-bar-label">
+                    <span>FELIZ (Smile)</span>
+                    <span id="barValHappy">0%</span>
+                </div>
+                <div class="analysis-bar-bg">
+                    <div id="barHappy" class="analysis-bar-fill" style="background: #00d9ff; box-shadow: 0 0 8px #00d9ff;"></div>
+                </div>
+            </div>
+
+            <div class="analysis-bar-wrapper">
+                <div class="analysis-bar-label">
+                    <span>TRISTE (Frown)</span>
+                    <span id="barValSad">0%</span>
+                </div>
+                <div class="analysis-bar-bg">
+                    <div id="barSad" class="analysis-bar-fill" style="background: #6b7aff; box-shadow: 0 0 8px #6b7aff;"></div>
+                </div>
+            </div>
+
+            <div class="analysis-bar-wrapper">
+                <div class="analysis-bar-label">
+                    <span>SURPRESO (Ocular)</span>
+                    <span id="barValSurprised">0%</span>
+                </div>
+                <div class="analysis-bar-bg">
+                    <div id="barSurprised" class="analysis-bar-fill" style="background: #ffaa00; box-shadow: 0 0 8px #ffaa00;"></div>
+                </div>
+            </div>
+
+            <div class="analysis-bar-wrapper">
+                <div class="analysis-bar-label">
+                    <span>BRAVO (Angry)</span>
+                    <span id="barValAngry">0%</span>
+                </div>
+                <div class="analysis-bar-bg">
+                    <div id="barAngry" class="analysis-bar-fill" style="background: #ff6b6b; box-shadow: 0 0 8px #ff6b6b;"></div>
+                </div>
+            </div>
+
+            <div class="analysis-bar-wrapper">
+                <div class="analysis-bar-label">
+                    <span>NEUTRO (Rest)</span>
+                    <span id="barValNeutral">0%</span>
+                </div>
+                <div class="analysis-bar-bg">
+                    <div id="barNeutral" class="analysis-bar-fill" style="background: #8aa29e; box-shadow: 0 0 8px #8aa29e;"></div>
+                </div>
+        </div>
+
+        <!-- Painel Científico do Laboratório de Calibração (FACS / CK+) -->
+        <div class="scientific-calibration-panel" id="scientificPanel">
+            <h3>🧪 LAB CIENTÍFICO (CK+)</h3>
+            
+            <div class="sci-bar-wrapper">
+                <div class="sci-bar-label">
+                    <span>Abertura Ocular Média</span>
+                    <span id="sciVal_eyeOpen">0.0000</span>
+                </div>
+                <div class="sci-bar-desc">CK+ Ativação: &gt; 0.0600</div>
+                <div class="sci-bar-bg">
+                    <div id="sciBar_eyeOpen" class="sci-bar-fill"></div>
+                </div>
+            </div>
+
+            <div class="sci-bar-wrapper">
+                <div class="sci-bar-label">
+                    <span>Métrica do Sorriso (3D)</span>
+                    <span id="sciVal_smile">0.0000</span>
+                </div>
+                <div class="sci-bar-desc">CK+ Feliz: &gt; 0.0350 | Triste: &lt; -0.0250</div>
+                <div class="sci-bar-bg">
+                    <div id="sciBar_smile" class="sci-bar-fill"></div>
+                </div>
+            </div>
+
+            <div class="sci-bar-wrapper">
+                <div class="sci-bar-label">
+                    <span>Altura da Boca Normalizada</span>
+                    <span id="sciVal_mouthHeight">0.0000</span>
+                </div>
+                <div class="sci-bar-desc">CK+ Surpresa: &gt; 0.0750</div>
+                <div class="sci-bar-bg">
+                    <div id="sciBar_mouthHeight" class="sci-bar-fill"></div>
+                </div>
+            </div>
+
+            <div class="sci-bar-wrapper">
+                <div class="sci-bar-label">
+                    <span>Franzido Sobrancelha-Olho</span>
+                    <span id="sciVal_eyeToBrow">0.0000</span>
+                </div>
+                <div class="sci-bar-desc">CK+ Bravo (Franzido): &lt; 0.1100</div>
+                <div class="sci-bar-bg">
+                    <div id="sciBar_eyeToBrow" class="sci-bar-fill"></div>
+                </div>
+            </div>
+        </div>
+
         <div
             style="position: fixed; top: 2rem; right: 2rem; background: rgba(15,15,23,0.8); padding: 1.2rem; border-radius: 12px; border: 2px solid rgba(232,234,237,0.15); backdrop-filter: blur(15px); z-index: 1000;">
             <h3

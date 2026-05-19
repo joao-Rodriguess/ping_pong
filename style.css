@@ -151,7 +151,7 @@ h3 {
     box-shadow: var(--glow-accent), 0 10px 40px rgba(0, 0, 0, 0.5);
 }
 
-.game-card.ninja:hover {
+.game-card.fruit:hover {
     border-color: var(--secondary);
     box-shadow: var(--glow-secondary), 0 10px 40px rgba(0, 0, 0, 0.5);
 }
@@ -498,4 +498,201 @@ canvas {
     text-shadow: 0 0 20px var(--success);
     z-index: 1000;
     animation: pulse 0.5s ease-in-out;
+}
+
+/* Barra de Status e Elementos Neon Adicionais */
+.game-status-bar {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    margin-bottom: 1rem;
+    font-family: 'Orbitron', sans-serif;
+}
+
+.lives-container {
+    font-size: 1.8rem;
+    display: flex;
+    gap: 0.3rem;
+    text-shadow: 0 0 10px rgba(255, 0, 85, 0.6);
+}
+
+/* Chefão (Boss) UI */
+.boss-health-bar-container {
+    position: fixed;
+    top: 8rem;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 400px;
+    background: rgba(0, 0, 0, 0.7);
+    border: 1px solid rgba(255, 235, 59, 0.3);
+    border-radius: 5px;
+    padding: 3px;
+    z-index: 999;
+    display: none;
+    backdrop-filter: blur(5px);
+    animation: fadeInDown 0.5s ease;
+}
+
+.boss-health-bar-label {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 0.8rem;
+    color: #ffeb3b;
+    text-align: center;
+    margin-bottom: 3px;
+    text-shadow: 0 0 5px rgba(255, 235, 59, 0.5);
+}
+
+.boss-health-bar {
+    height: 12px;
+    background: linear-gradient(90deg, #ffeb3b, #ff9800);
+    box-shadow: 0 0 10px rgba(255, 235, 59, 0.7);
+    width: 100%;
+    transition: width 0.2s ease-out;
+    border-radius: 3px;
+}
+
+/* Screen Shake */
+.shake {
+    animation: screenShake 0.4s ease-in-out;
+}
+
+@keyframes screenShake {
+    0%, 100% { transform: translate(0, 0) rotate(0deg); }
+    10% { transform: translate(-4px, -2px) rotate(-1deg); }
+    20% { transform: translate(3px, 4px) rotate(1deg); }
+    30% { transform: translate(-3px, 2px) rotate(0deg); }
+    40% { transform: translate(2px, -3px) rotate(1deg); }
+    55% { transform: translate(-2px, 3px) rotate(-1deg); }
+    70% { transform: translate(3px, 1px) rotate(0deg); }
+    85% { transform: translate(-1px, -2px) rotate(1deg); }
+}
+
+/* Expression Analyzer Bars */
+.expression-analysis-panel {
+    position: fixed;
+    left: 2rem;
+    top: 2rem;
+    background: rgba(15, 15, 23, 0.85);
+    border: 2px solid rgba(232, 234, 237, 0.15);
+    border-radius: 12px;
+    padding: 1.2rem;
+    width: 260px;
+    backdrop-filter: blur(15px);
+    z-index: 1000;
+    font-family: 'Inter', sans-serif;
+}
+
+.expression-analysis-panel h3 {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 1rem;
+    color: var(--primary);
+    text-shadow: var(--glow-primary);
+    margin-bottom: 1rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.analysis-bar-wrapper {
+    margin-bottom: 0.8rem;
+}
+
+.analysis-bar-label {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    margin-bottom: 0.3rem;
+}
+
+.analysis-bar-bg {
+    height: 8px;
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.analysis-bar-fill {
+    height: 100%;
+    width: 0%;
+    transition: width 0.15s ease-out;
+    border-radius: 4px;
+}
+
+/* Transição global suave de entrada */
+.landing-container, .game-container {
+    animation: pageFadeIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes pageFadeIn {
+    from {
+        opacity: 0;
+        transform: scale(0.98);
+        filter: blur(5px);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+        filter: blur(0);
+    }
+}
+
+/* Painel Científico do Laboratório de Calibração */
+.scientific-calibration-panel {
+    position: fixed;
+    left: 2rem;
+    bottom: 2rem;
+    background: rgba(10, 10, 18, 0.9);
+    border: 2px solid rgba(0, 217, 255, 0.25);
+    box-shadow: 0 0 15px rgba(0, 217, 255, 0.1);
+    border-radius: 12px;
+    padding: 1.2rem;
+    width: 260px;
+    backdrop-filter: blur(15px);
+    z-index: 1000;
+    font-family: 'Inter', sans-serif;
+    animation: fadeInUp 0.8s ease;
+}
+
+.scientific-calibration-panel h3 {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 0.9rem;
+    color: #00d9ff;
+    text-shadow: 0 0 8px rgba(0, 217, 255, 0.4);
+    margin-bottom: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.sci-bar-wrapper {
+    margin-bottom: 0.8rem;
+}
+
+.sci-bar-label {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.75rem;
+    color: rgba(255, 255, 255, 0.8);
+    margin-bottom: 0.2rem;
+}
+
+.sci-bar-desc {
+    font-size: 0.65rem;
+    color: rgba(255, 255, 255, 0.4);
+    margin-bottom: 0.3rem;
+    font-family: 'Inter', sans-serif;
+}
+
+.sci-bar-bg {
+    height: 6px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.sci-bar-fill {
+    height: 100%;
+    width: 2%;
+    background: rgba(232, 234, 237, 0.4);
+    transition: width 0.1s ease-out, background 0.3s ease, box-shadow 0.3s ease;
+    border-radius: 3px;
 }

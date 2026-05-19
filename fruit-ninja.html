@@ -148,8 +148,11 @@
         <canvas id="gameCanvas" width="640" height="480"></canvas>
 
         <div class="ui-layer">
-            <div id="scoreDisplay" class="score-display">Score: 0</div>
-            <div id="comboDisplay"></div>
+            <div class="game-status-bar" style="position: absolute; top: 15px; left: 15px; right: 15px; display: flex; justify-content: space-between; align-items: center; pointer-events: none;">
+                <div id="scoreDisplay" style="font-size: 24px; color: #00f3ff; font-family: 'Orbitron', sans-serif; font-weight: 700; text-shadow: 0 0 10px rgba(0, 243, 255, 0.6);">Score: 0</div>
+                <div id="livesDisplay" class="lives-container" style="font-size: 24px;">❤️ ❤️ ❤️</div>
+            </div>
+            <div id="comboDisplay" class="combo-display" style="display: none;"></div>
         </div>
 
         <div id="controls">
