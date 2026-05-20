@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cyber Photo Booth - Camera Games</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/control_utils/control_utils.js"
+        crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js"
+        crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.js" crossorigin="anonymous"></script>
+</head>
+
+<body>
+    <div class="game-container">
+        <div class="game-header">
+            <h1>📸 Cyber Photo Booth</h1>
+            <p style="color: var(--text-muted); font-size: 0.95rem; margin-top: 0.3rem;">Estúdio de selfies neon e stickers faciais tridimensionais por IA</p>
+        </div>
+
+        <!-- Coluna Lateral Esquerda: Seleção de Filtros Faciais -->
+        <div class="sidebar-left" style="top: 2rem;">
+            <div class="expression-analysis-panel" style="border-color: rgba(0, 243, 255, 0.25);">
+                <h3 style="color: #00f3ff; text-shadow: 0 0 10px rgba(0, 243, 255, 0.3);">🎭 Filtros Faciais</h3>
+                <p style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 1.2rem; line-height: 1.4;">Selecione um sticker neon inteligente que acompanha a rotação da sua cabeça:</p>
+                
+                <div class="booth-option-btn active" id="optFace_visor" data-type="visor">
+                    <span class="option-icon">🕶️</span>
+                    <div class="option-details">
+                        <span class="option-title">Visor Cyberpunk</span>
+                        <span class="option-desc">Óculos holográfico neon</span>
+                    </div>
+                </div>
+
+                <div class="booth-option-btn" id="optFace_horns" data-type="horns">
+                    <span class="option-icon">😈</span>
+                    <div class="option-details">
+                        <span class="option-title">Chifres de Energia</span>
+                        <span class="option-desc">Chifres vermelhos neon</span>
+                    </div>
+                </div>
+
+                <div class="booth-option-btn" id="optFace_halo" data-type="halo">
+                    <span class="option-icon">😇</span>
+                    <div class="option-details">
+                        <span class="option-title">Ciber Auréola</span>
+                        <span class="option-desc">Anel tecnológico flutuante</span>
+                    </div>
+                </div>
+
+                <div class="booth-option-btn" id="optFace_none" data-type="none">
+                    <span class="option-icon">❌</span>
+                    <div class="option-details">
+                        <span class="option-title">Nenhum</span>
+                        <span class="option-desc">Apenas a sua face</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Canvas Principal Centralizado -->
+        <div class="game-wrapper" style="box-shadow: 0 0 50px rgba(0, 243, 255, 0.15); border-color: rgba(0, 243, 255, 0.3);">
+            <!-- Efeito de Flash na Tela -->
+            <div id="cameraFlash" class="camera-flash-overlay"></div>
+            <!-- Contagem Regressiva Flutuante -->
+            <div id="countdownDisplay" class="countdown-overlay-text">3</div>
+            
+            <canvas id="boothCanvas" width="800" height="600"></canvas>
+            <video class="input_video" style="display: none;"></video>
+        </div>
+
+        <!-- Coluna Lateral Direita: Efeitos de Imagem & Molduras -->
+        <div class="sidebar-right">
+            <!-- Painel de Efeitos do Canvas -->
+            <div class="expression-analysis-panel" style="border-color: rgba(0, 136, 255, 0.25);">
+                <h3 style="color: #0088ff; text-shadow: 0 0 10px rgba(0, 136, 255, 0.3);">🎨 Filtros de Imagem</h3>
+                <p style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 1.2rem; line-height: 1.4;">Aplique shaders digitais em tempo real sobre todo o feed da câmera:</p>
+
+                <div class="booth-option-btn active" id="optImg_glitch" data-filter="glitch">
+                    <span class="option-icon">👾</span>
+                    <div class="option-details">
+                        <span class="option-title">Glitch RGB Split</span>
+                        <span class="option-desc">Distorção cromática retrô</span>
+                    </div>
+                </div>
+
+                <div class="booth-option-btn" id="optImg_matrix" data-filter="matrix">
+                    <span class="option-icon">💻</span>
+                    <div class="option-details">
+                        <span class="option-title">Chuva Matrix</span>
+                        <span class="option-desc">Cascata de código binário</span>
+                    </div>
+                </div>
+
+                <div class="booth-option-btn" id="optImg_thermal" data-filter="thermal">
+                    <span class="option-icon">🔥</span>
+                    <div class="option-details">
+                        <span class="option-title">Visão Térmica</span>
+                        <span class="option-desc">Esquema de calor por pixels</span>
+                    </div>
+                </div>
+
+                <div class="booth-option-btn" id="optImg_none" data-filter="normal">
+                    <span class="option-icon">📷</span>
+                    <div class="option-details">
+                        <span class="option-title">Imagem Normal</span>
+                        <span class="option-desc">Feed limpo da webcam</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Painel de Molduras -->
+            <div class="expression-analysis-panel" style="border-color: rgba(181, 55, 255, 0.25);">
+                <h3 style="color: #b537ff; text-shadow: 0 0 10px rgba(181, 55, 255, 0.3);">🖼️ Molduras Sci-Fi</h3>
+                
+                <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem;">
+                    <button class="btn btn-secondary active" id="frameTokyo" data-frame="tokyo" style="flex: 1; padding: 0.5rem 0.2rem; font-size: 0.75rem; border-color: #00f3ff; color: #00f3ff; text-shadow: 0 0 5px #00f3ff;">TOKYO 2099</button>
+                    <button class="btn btn-secondary" id="frameGlitch" data-frame="glitch" style="flex: 1; padding: 0.5rem 0.2rem; font-size: 0.75rem; border-color: #ff0055; color: #ff0055; text-shadow: 0 0 5px #ff0055;">SYNDICATE</button>
+                    <button class="btn btn-secondary" id="frameNone" data-frame="none" style="flex: 1; padding: 0.5rem 0.2rem; font-size: 0.75rem; border-color: #ffffff; color: #ffffff;">NENHUMA</button>
+                </div>
+            </div>
+
+            <!-- Preview da Câmera Crua (Necessário para MediaPipe) -->
+            <div class="video-preview" style="height: 140px;">
+                <canvas class="output_canvas" width="240" height="180"></canvas>
+            </div>
+        </div>
+
+        <!-- Botão Centralizado Inferior de Disparo -->
+        <div style="position: fixed; bottom: 2rem; left: 50%; transform: translateX(-50%); z-index: 1001; text-align: center;">
+            <button class="btn" id="captureBtn" style="padding: 1.2rem 3rem; font-size: 1.3rem; border-width: 3px; border-color: #00f3ff; color: #00f3ff; box-shadow: 0 0 25px rgba(0,243,255,0.25); background: rgba(5,5,8,0.85); width: 320px; transition: all 0.3s ease;">
+                📸 CAPTURAR SELFIE
+            </button>
+        </div>
+    </div>
+
+    <script src="shared.js"></script>
+    <script src="cyber-booth.js"></script>
+</body>
+
+</html>

@@ -734,3 +734,104 @@ canvas {
     height: 100%;
     object-fit: cover;
 }
+
+/* Cyber Photo Booth Styles */
+.camera-flash-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: #ffffff;
+    opacity: 0;
+    pointer-events: none;
+    z-index: 1000;
+    border-radius: 10px;
+    transition: opacity 0.05s ease-out;
+}
+
+.countdown-overlay-text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-family: 'Orbitron', sans-serif;
+    font-size: 8rem;
+    font-weight: 900;
+    color: #00f3ff;
+    text-shadow: 0 0 30px rgba(0, 243, 255, 0.8), 0 0 60px rgba(0, 243, 255, 0.4);
+    pointer-events: none;
+    z-index: 1002;
+    display: none;
+}
+
+.booth-option-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    padding: 0.6rem 0.8rem;
+    margin-bottom: 0.6rem;
+    cursor: pointer;
+    transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.booth-option-btn:hover {
+    background: rgba(255, 255, 255, 0.07);
+    border-color: rgba(255, 255, 255, 0.25);
+    transform: translateX(3px);
+}
+
+/* Filtros Faciais (Ciano) */
+.sidebar-left .booth-option-btn:hover {
+    background: rgba(0, 243, 255, 0.04);
+    border-color: rgba(0, 243, 255, 0.3);
+}
+
+.sidebar-left .booth-option-btn.active {
+    background: rgba(0, 243, 255, 0.1);
+    border-color: #00f3ff;
+    box-shadow: 0 0 12px rgba(0, 243, 255, 0.25);
+}
+
+/* Filtros de Imagem (Azul) */
+.sidebar-right .booth-option-btn:hover {
+    background: rgba(0, 136, 255, 0.04);
+    border-color: rgba(0, 136, 255, 0.3);
+}
+
+.sidebar-right .booth-option-btn.active {
+    background: rgba(0, 136, 255, 0.1);
+    border-color: #0088ff;
+    box-shadow: 0 0 12px rgba(0, 136, 255, 0.25);
+}
+
+.booth-option-btn .option-icon {
+    font-size: 1.4rem;
+    filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.1));
+}
+
+.booth-option-btn.active .option-icon {
+    filter: drop-shadow(0 0 8px currentColor);
+}
+
+.booth-option-btn .option-details {
+    display: flex;
+    flex-direction: column;
+    text-align: left;
+}
+
+.booth-option-btn .option-title {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--text-light);
+}
+
+.booth-option-btn .option-desc {
+    font-size: 0.65rem;
+    color: var(--text-muted);
+    margin-top: 0.1rem;
+}
