@@ -568,21 +568,51 @@ canvas {
 }
 
 /* Expression Analyzer Bars */
-.expression-analysis-panel {
+.sidebar-left {
     position: fixed;
     left: 2rem;
+    top: 6.5rem;
+    bottom: 2rem;
+    width: 280px;
+    display: flex;
+    flex-direction: column;
+    gap: 1.2rem;
+    z-index: 1000;
+    overflow-y: auto;
+    scrollbar-width: none; /* Firefox */
+}
+
+.sidebar-left::-webkit-scrollbar {
+    display: none; /* Safari/Chrome */
+}
+
+.sidebar-right {
+    position: fixed;
+    right: 2rem;
     top: 2rem;
+    bottom: 2rem;
+    width: 280px;
+    display: flex;
+    flex-direction: column;
+    gap: 1.2rem;
+    z-index: 1000;
+}
+
+.expression-analysis-panel,
+.scientific-calibration-panel,
+.history-panel {
     background: rgba(15, 15, 23, 0.85);
     border: 2px solid rgba(232, 234, 237, 0.15);
     border-radius: 12px;
     padding: 1.2rem;
-    width: 260px;
+    width: 100%;
     backdrop-filter: blur(15px);
-    z-index: 1000;
     font-family: 'Inter', sans-serif;
+    transition: all 0.3s ease;
 }
 
-.expression-analysis-panel h3 {
+.expression-analysis-panel h3,
+.history-panel h3 {
     font-family: 'Orbitron', sans-serif;
     font-size: 1rem;
     color: var(--primary);
@@ -638,18 +668,8 @@ canvas {
 
 /* Painel Científico do Laboratório de Calibração */
 .scientific-calibration-panel {
-    position: fixed;
-    left: 2rem;
-    bottom: 2rem;
-    background: rgba(10, 10, 18, 0.9);
-    border: 2px solid rgba(0, 217, 255, 0.25);
-    box-shadow: 0 0 15px rgba(0, 217, 255, 0.1);
-    border-radius: 12px;
-    padding: 1.2rem;
-    width: 260px;
-    backdrop-filter: blur(15px);
-    z-index: 1000;
-    font-family: 'Inter', sans-serif;
+    border-color: rgba(0, 217, 255, 0.25);
+    box-shadow: 0 0 15px rgba(0, 217, 255, 0.05);
     animation: fadeInUp 0.8s ease;
 }
 
@@ -695,4 +715,22 @@ canvas {
     background: rgba(232, 234, 237, 0.4);
     transition: width 0.1s ease-out, background 0.3s ease, box-shadow 0.3s ease;
     border-radius: 3px;
+}
+
+/* Encaixar preview da webcam na barra lateral direita */
+.sidebar-right .video-preview {
+    position: static;
+    width: 100%;
+    height: 200px;
+    margin-top: auto;
+    border: 2px solid var(--primary);
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: var(--glow-primary);
+}
+
+.sidebar-right .video-preview canvas {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
 }

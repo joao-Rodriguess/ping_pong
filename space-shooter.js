@@ -111,10 +111,10 @@ function processFaceControl(landmarks) {
     noseOffset = currentNoseX - baseNoseX;
     headLiftOffset = baseNoseToEyesY - currentNoseToEyesY; // Positivo se o nariz subir
 
-    // Mapeamento suave e amplificado para guiar a nave na horizontal
+    // Mapeamento suave e amplificado para guiar a nave na horizontal por inclinação lateral da cabeça
     const sensitivity = 2.4;
     const targetX = canvas.width / 2 - (noseOffset * canvas.width * sensitivity);
-    player.targetX = Math.max(player.width / 2, Math.min(canvas.width - player.width / 2, targetX));
+    player.targetX = Math.max(player.width / 2 + 10, Math.min(canvas.width - player.width / 2 - 10, targetX));
 
     // Atirar: se o nariz subir além de um limiar confortável (0.022)
     isShooting = headLiftOffset > 0.022;
@@ -789,7 +789,7 @@ function drawHUD() {
 
         ctx.restore();
     } else if (gameRunning) {
-        // Indicador horizontal visual do olhar no rodapé
+        // Indicador horizontal visual de inclinação da cabeça no rodapé
         ctx.save();
         const hudY = canvas.height - 25;
         const barW = 200;
@@ -815,7 +815,12 @@ function drawHUD() {
         ctx.arc(indicatorX, hudY + 3, 5, 0, Math.PI * 2);
         ctx.fill();
 
-        // Feedback de Tiro/Inclinação vertical
+        // Feedback de Tiro e legenda de inclinação horizontal
+        ctx.fillStyle = '#a0aec0';
+        ctx.font = 'bold 11px Orbitron';
+        ctx.textAlign = 'center';
+        ctx.fillText(`INCLINAÇÃO FACIAL`, canvas.width / 2, hudY - 26);
+
         ctx.fillStyle = headLiftOffset > 0.022 ? '#00f3ff' : '#a0aec0';
         ctx.font = 'bold 12px Orbitron';
         ctx.textAlign = 'center';
