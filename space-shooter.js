@@ -89,12 +89,16 @@ function processFaceControl(landmarks) {
     const eyeR_outer = landmarks[263];
     const irisR = landmarks[473];
 
-    // Posições relativas horizontais da íris nos olhos (de 0 a 1)
-    const relL = (irisL.x - eyeL_inner.x) / (eyeL_outer.x - eyeL_inner.x);
-    const relR = (irisR.x - eyeR_inner.x) / (eyeR_outer.x - eyeR_inner.x);
+    // Centro horizontal de cada olho
+    const centerL = (eyeL_outer.x + eyeL_inner.x) / 2;
+    const centerR = (eyeR_outer.x + eyeR_inner.x) / 2;
 
-    // Média horizontal do olhar
-    currentGazeX = (relL + relR) / 2;
+    // Deslocamento da íris em relação ao centro do olho
+    const diffL = irisL.x - centerL;
+    const diffR = irisR.x - centerR;
+
+    // Média horizontal do olhar (geralmente varia de -0.02 a 0.02)
+    currentGazeX = (diffL + diffR) / 2;
 
     // Inclinação Vertical da Cabeça (Levantar a cabeça)
     const nose = landmarks[1];
@@ -400,17 +404,17 @@ function triggerScreenShake() {
 
 function updatePlayer() {
     if (landmarksDetected && !faceCalibrating) {
-        // Mapear gazeOffset como um joystick analógico
-        const deadZone = 0.04;
+        // Mapear gazeOffset como um joystick analógico de alta sensibilidade
+        const deadZone = 0.003;
         let speedFactor = 0;
         
         if (gazeOffset > deadZone) {
             // Olhando para a direita (coordenada X do olho aumenta)
-            speedFactor = Math.min(1.0, (gazeOffset - deadZone) / 0.12);
+            speedFactor = Math.min(1.0, (gazeOffset - deadZone) / 0.008);
             player.x += player.speed * speedFactor;
         } else if (gazeOffset < -deadZone) {
             // Olhando para a esquerda (coordenada X do olho diminui)
-            speedFactor = Math.min(1.0, (-gazeOffset - deadZone) / 0.12);
+            speedFactor = Math.min(1.0, (-gazeOffset - deadZone) / 0.008);
             player.x -= player.speed * speedFactor;
         }
         
@@ -820,9 +824,9 @@ function drawHUD() {
         ctx.fillStyle = 'rgba(255, 255, 255, 0.1)';
         ctx.fillRect(hudX, hudY, barW, 6);
 
-        // Mapear gazeOffset (-0.12 a 0.12) para a largura do barW
-        const mappedOffset = Math.max(-0.12, Math.min(0.12, gazeOffset));
-        const indicatorX = hudX + barW / 2 + (mappedOffset / 0.12) * (barW / 2);
+        // Mapear gazeOffset (-0.012 a 0.012) para a largura do barW
+        const mappedOffset = Math.max(-0.012, Math.min(0.012, gazeOffset));
+        const indicatorX = hudX + barW / 2 + (mappedOffset / 0.012) * (barW / 2);
 
         // Indicador central (neutro)
         ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
