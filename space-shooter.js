@@ -28,7 +28,8 @@ const player = {
     width: 45,
     height: 45,
     color: '#00f3ff',
-    speed: 16
+    speed: 16,
+    targetX: canvas.width / 2
 };
 
 // Lists
@@ -50,13 +51,13 @@ let faceCalibrating = true;
 let faceCalibrationFrames = [];
 const FACE_CALIBRATION_TOTAL_FRAMES = 75; // Aprox. 2.5s a 30fps
 
-let baseGazeX = 0.5;
+let baseNoseX = 0.5;
 let baseNoseToEyesY = 0.15;
 
 // Valores instantâneos
-let currentGazeX = 0.5;
+let currentNoseX = 0.5;
 let currentNoseToEyesY = 0.15;
-let gazeOffset = 0;
+let noseOffset = 0;
 let headLiftOffset = 0;
 
 let isShooting = false;
@@ -79,43 +80,25 @@ function processFaceControl(landmarks) {
     }
     landmarksDetected = true;
 
-    // Olho Esquerdo (Contorno landmarks 33 e 133, Íris 468)
-    const eyeL_outer = landmarks[33];
-    const eyeL_inner = landmarks[133];
-    const irisL = landmarks[468];
-
-    // Olho Direito (Contorno landmarks 362 e 263, Íris 473)
-    const eyeR_inner = landmarks[362];
-    const eyeR_outer = landmarks[263];
-    const irisR = landmarks[473];
-
-    // Centro horizontal de cada olho
-    const centerL = (eyeL_outer.x + eyeL_inner.x) / 2;
-    const centerR = (eyeR_outer.x + eyeR_inner.x) / 2;
-
-    // Deslocamento da íris em relação ao centro do olho
-    const diffL = irisL.x - centerL;
-    const diffR = irisR.x - centerR;
-
-    // Média horizontal do olhar (geralmente varia de -0.02 a 0.02)
-    currentGazeX = (diffL + diffR) / 2;
+    // Rastrear a ponta do nariz (Landmark 1) para movimento horizontal
+    const nose = landmarks[1];
+    currentNoseX = nose.x;
 
     // Inclinação Vertical da Cabeça (Levantar a cabeça)
-    const nose = landmarks[1];
     const eyeCenterY = (landmarks[159].y + landmarks[386].y) / 2;
     currentNoseToEyesY = nose.y - eyeCenterY;
 
     // FASE DE CALIBRAÇÃO ATIVA
     if (faceCalibrating) {
-        faceCalibrationFrames.push({ gazeX: currentGazeX, noseY: currentNoseToEyesY });
+        faceCalibrationFrames.push({ noseX: currentNoseX, noseY: currentNoseToEyesY });
         
         if (faceCalibrationFrames.length >= FACE_CALIBRATION_TOTAL_FRAMES) {
-            let sumGazeX = 0, sumNoseY = 0;
+            let sumNoseX = 0, sumNoseY = 0;
             faceCalibrationFrames.forEach(f => {
-                sumGazeX += f.gazeX;
+                sumNoseX += f.noseX;
                 sumNoseY += f.noseY;
             });
-            baseGazeX = sumGazeX / faceCalibrationFrames.length;
+            baseNoseX = sumNoseX / faceCalibrationFrames.length;
             baseNoseToEyesY = sumNoseY / faceCalibrationFrames.length;
             faceCalibrating = false;
             Sound.playPowerup();
@@ -125,8 +108,13 @@ function processFaceControl(landmarks) {
     }
 
     // Calcular offsets em relação ao estado basal
-    gazeOffset = currentGazeX - baseGazeX;
+    noseOffset = currentNoseX - baseNoseX;
     headLiftOffset = baseNoseToEyesY - currentNoseToEyesY; // Positivo se o nariz subir
+
+    // Mapeamento suave e amplificado para guiar a nave na horizontal
+    const sensitivity = 2.4;
+    const targetX = canvas.width / 2 - (noseOffset * canvas.width * sensitivity);
+    player.targetX = Math.max(player.width / 2, Math.min(canvas.width - player.width / 2, targetX));
 
     // Atirar: se o nariz subir além de um limiar confortável (0.022)
     isShooting = headLiftOffset > 0.022;
@@ -404,22 +392,8 @@ function triggerScreenShake() {
 
 function updatePlayer() {
     if (landmarksDetected && !faceCalibrating) {
-        // Mapear gazeOffset como um joystick analógico de alta sensibilidade
-        const deadZone = 0.003;
-        let speedFactor = 0;
-        
-        if (gazeOffset > deadZone) {
-            // Olhando para a direita (coordenada X do olho aumenta)
-            speedFactor = Math.min(1.0, (gazeOffset - deadZone) / 0.008);
-            player.x += player.speed * speedFactor;
-        } else if (gazeOffset < -deadZone) {
-            // Olhando para a esquerda (coordenada X do olho diminui)
-            speedFactor = Math.min(1.0, (-gazeOffset - deadZone) / 0.008);
-            player.x -= player.speed * speedFactor;
-        }
-        
-        // Limitar dentro das bordas
-        player.x = Math.max(player.width / 2, Math.min(canvas.width - player.width / 2, player.x));
+        // Interpolar suavemente para evitar tremulações, igual ao Cyber Dodge!
+        player.x += (player.targetX - player.x) * 0.20;
     }
 }
 
@@ -825,15 +799,15 @@ function drawHUD() {
         ctx.fillStyle = 'rgba(255, 255, 255, 0.1)';
         ctx.fillRect(hudX, hudY, barW, 6);
 
-        // Mapear gazeOffset (-0.012 a 0.012) para a largura do barW
-        const mappedOffset = Math.max(-0.012, Math.min(0.012, gazeOffset));
-        const indicatorX = hudX + barW / 2 + (mappedOffset / 0.012) * (barW / 2);
+        // Mapear noseOffset (-0.12 a 0.12) para a largura do barW
+        const mappedOffset = Math.max(-0.12, Math.min(0.12, noseOffset));
+        const indicatorX = hudX + barW / 2 + (mappedOffset / 0.12) * (barW / 2);
 
         // Indicador central (neutro)
         ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
         ctx.fillRect(canvas.width / 2 - 1, hudY - 3, 2, 12);
 
-        // Cursor do olhar
+        // Cursor do nariz
         ctx.fillStyle = '#00f3ff';
         ctx.shadowBlur = 10;
         ctx.shadowColor = '#00f3ff';
