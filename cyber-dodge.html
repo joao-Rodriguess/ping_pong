@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Space Shooter - Camera Games</title>
+    <title>Cyber Dodge - Camera Games</title>
     <link rel="stylesheet" href="style.css">
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/control_utils/control_utils.js"
@@ -17,7 +17,7 @@
 <body>
     <div class="game-container">
         <div class="game-header">
-            <h1>🚀 Space Shooter</h1>
+            <h1>🛡️ Cyber Dodge</h1>
         </div>
 
         <div id="scoreDisplay" class="score-display">Score: 0</div>
@@ -25,22 +25,15 @@
             style="position: fixed; top: 6rem; right: 2rem; font-family: 'Orbitron'; font-size: 1.5rem; color: #ff0055; z-index: 1000;">
             ❤️ x 3</div>
 
-        <!-- Barra de Vida do Chefão (Boss) -->
-        <div id="bossUI" class="boss-health-bar-container">
-            <div class="boss-health-bar-label">👾 CHEFE: DESTRUIDOR NEON</div>
-            <div style="background: rgba(255, 255, 255, 0.1); border-radius: 3px; height: 12px; overflow: hidden;">
-                <div id="bossBar" class="boss-health-bar"></div>
-            </div>
-        </div>
-
         <div class="game-wrapper">
             <canvas id="gameCanvas" width="800" height="600"></canvas>
         </div>
 
         <div class="controls-overlay" id="controls">
             <h3>Como Jogar</h3>
-            <p>👀 Olhe para a esquerda ou direita para mover a nave</p>
-            <p>🔼 Levante a cabeça rapidamente para disparar lasers</p>
+            <p>👤 Mova ou incline a cabeça para os lados para mover a nave horizontalmente</p>
+            <p>🔴 Desvie dos blocos de energia vermelhos em queda!</p>
+            <p>💎 Colete os cristais de energia ciano brilhantes para ganhar pontos!</p>
             <button class="btn" id="startBtn">Iniciar Jogo</button>
         </div>
 
@@ -51,7 +44,7 @@
     </div>
 
     <script src="shared.js"></script>
-    <script src="space-shooter.js"></script>
+    <script src="cyber-dodge.js"></script>
 </body>
 
 </html>

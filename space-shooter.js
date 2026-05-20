@@ -45,56 +45,129 @@ const POWERUP_SPEED = 3;
 const ENEMY_SPAWN_INTERVAL = 1400; // ms
 let lastEnemySpawn = 0;
 
-// Hand tracking
-let handPosition = null;
-let isShooting = false;
+// IA e Controle Facial (FaceMesh)
+let faceCalibrating = true;
+let faceCalibrationFrames = [];
+const FACE_CALIBRATION_TOTAL_FRAMES = 75; // Aprox. 2.5s a 30fps
 
-// MediaPipe Hands Setup
+let baseGazeX = 0.5;
+let baseNoseToEyesY = 0.15;
+
+// Valores instantâneos
+let currentGazeX = 0.5;
+let currentNoseToEyesY = 0.15;
+let gazeOffset = 0;
+let headLiftOffset = 0;
+
+let isShooting = false;
+let landmarksDetected = false;
+
+// Função auxiliar de distância Euclidiana 3D
+function getDistance3D(p1, p2) {
+    return Math.sqrt(
+        Math.pow(p2.x - p1.x, 2) +
+        Math.pow(p2.y - p1.y, 2) +
+        Math.pow(p2.z - p1.z, 2)
+    );
+}
+
+function processFaceControl(landmarks) {
+    if (!landmarks || landmarks.length < 478) {
+        landmarksDetected = false;
+        isShooting = false;
+        return;
+    }
+    landmarksDetected = true;
+
+    // Olho Esquerdo (Contorno landmarks 33 e 133, Íris 468)
+    const eyeL_outer = landmarks[33];
+    const eyeL_inner = landmarks[133];
+    const irisL = landmarks[468];
+
+    // Olho Direito (Contorno landmarks 362 e 263, Íris 473)
+    const eyeR_inner = landmarks[362];
+    const eyeR_outer = landmarks[263];
+    const irisR = landmarks[473];
+
+    // Posições relativas horizontais da íris nos olhos (de 0 a 1)
+    const relL = (irisL.x - eyeL_inner.x) / (eyeL_outer.x - eyeL_inner.x);
+    const relR = (irisR.x - eyeR_inner.x) / (eyeR_outer.x - eyeR_inner.x);
+
+    // Média horizontal do olhar
+    currentGazeX = (relL + relR) / 2;
+
+    // Inclinação Vertical da Cabeça (Levantar a cabeça)
+    const nose = landmarks[1];
+    const eyeCenterY = (landmarks[159].y + landmarks[386].y) / 2;
+    currentNoseToEyesY = nose.y - eyeCenterY;
+
+    // FASE DE CALIBRAÇÃO ATIVA
+    if (faceCalibrating) {
+        faceCalibrationFrames.push({ gazeX: currentGazeX, noseY: currentNoseToEyesY });
+        
+        if (faceCalibrationFrames.length >= FACE_CALIBRATION_TOTAL_FRAMES) {
+            let sumGazeX = 0, sumNoseY = 0;
+            faceCalibrationFrames.forEach(f => {
+                sumGazeX += f.gazeX;
+                sumNoseY += f.noseY;
+            });
+            baseGazeX = sumGazeX / faceCalibrationFrames.length;
+            baseNoseToEyesY = sumNoseY / faceCalibrationFrames.length;
+            faceCalibrating = false;
+            Sound.playPowerup();
+        }
+        isShooting = false;
+        return;
+    }
+
+    // Calcular offsets em relação ao estado basal
+    gazeOffset = currentGazeX - baseGazeX;
+    headLiftOffset = baseNoseToEyesY - currentNoseToEyesY; // Positivo se o nariz subir
+
+    // Atirar: se o nariz subir além de um limiar confortável (0.022)
+    isShooting = headLiftOffset > 0.022;
+}
+
+// MediaPipe FaceMesh Setup
 function onResults(results) {
     canvasCtx.save();
     canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
     canvasCtx.drawImage(results.image, 0, 0, canvasElement.width, canvasElement.height);
 
-    if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
-        const landmarks = results.multiHandLandmarks[0];
+    if (results.multiFaceLandmarks && results.multiFaceLandmarks.length > 0) {
+        const landmarks = results.multiFaceLandmarks[0];
 
-        // Desenhar a mão no preview
-        drawConnectors(canvasCtx, landmarks, HAND_CONNECTIONS, { color: '#00f3ff', lineWidth: 2 });
-        drawLandmarks(canvasCtx, landmarks, { color: '#ff0055', lineWidth: 1 });
+        // Desenhar contornos oculares e lábios no preview da câmera
+        drawConnectors(canvasCtx, landmarks, FACEMESH_RIGHT_EYE, { color: '#00d9ff', lineWidth: 1.5 });
+        drawConnectors(canvasCtx, landmarks, FACEMESH_LEFT_EYE, { color: '#00d9ff', lineWidth: 1.5 });
+        drawConnectors(canvasCtx, landmarks, FACEMESH_LIPS, { color: '#0088ff', lineWidth: 1 });
 
-        // Posição da palma (landmark 9)
-        const palm = landmarks[9];
-        handPosition = {
-            x: (1 - palm.x) * canvas.width, // Espelhar
-            y: palm.y * canvas.height
-        };
-
-        // Apontando para atirar
-        isShooting = isPointingGesture(landmarks);
+        // Processar controles baseados na face
+        processFaceControl(landmarks);
     } else {
-        handPosition = null;
+        landmarksDetected = false;
         isShooting = false;
     }
 
     canvasCtx.restore();
 }
 
-const hands = new Hands({
-    locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`
+const faceMesh = new FaceMesh({
+    locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${file}`
 });
 
-hands.setOptions({
-    maxNumHands: 1,
-    modelComplexity: 1,
+faceMesh.setOptions({
+    maxNumFaces: 1,
+    refineLandmarks: true,
     minDetectionConfidence: 0.5,
     minTrackingConfidence: 0.5
 });
 
-hands.onResults(onResults);
+faceMesh.onResults(onResults);
 
 const camera = new Camera(videoElement, {
     onFrame: async () => {
-        await hands.send({ image: videoElement });
+        await faceMesh.send({ image: videoElement });
     },
     width: 640,
     height: 480
@@ -326,16 +399,23 @@ function triggerScreenShake() {
 }
 
 function updatePlayer() {
-    if (handPosition) {
-        // Movimentação suave
-        const dx = handPosition.x - player.x;
-        const dy = handPosition.y - player.y;
-        player.x += dx * 0.22;
-        player.y += dy * 0.22;
-
+    if (landmarksDetected && !faceCalibrating) {
+        // Mapear gazeOffset como um joystick analógico
+        const deadZone = 0.04;
+        let speedFactor = 0;
+        
+        if (gazeOffset > deadZone) {
+            // Olhando para a direita (coordenada X do olho aumenta)
+            speedFactor = Math.min(1.0, (gazeOffset - deadZone) / 0.12);
+            player.x += player.speed * speedFactor;
+        } else if (gazeOffset < -deadZone) {
+            // Olhando para a esquerda (coordenada X do olho diminui)
+            speedFactor = Math.min(1.0, (-gazeOffset - deadZone) / 0.12);
+            player.x -= player.speed * speedFactor;
+        }
+        
         // Limitar dentro das bordas
         player.x = Math.max(player.width / 2, Math.min(canvas.width - player.width / 2, player.x));
-        player.y = Math.max(player.height / 2, Math.min(canvas.height - player.height / 2, player.y));
     }
 }
 
@@ -689,6 +769,81 @@ function drawHUD() {
         ctx.fillRect(player.x - 30, player.y + player.height / 2 + 12, 60 * (percent / 100), 6);
         ctx.restore();
     }
+
+    // Overlay de Calibração Basal de Rosto
+    if (faceCalibrating) {
+        ctx.save();
+        ctx.fillStyle = 'rgba(5, 5, 8, 0.85)';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        // Moldura Neon
+        ctx.strokeStyle = '#00f3ff';
+        ctx.lineWidth = 3;
+        ctx.shadowBlur = 15;
+        ctx.shadowColor = '#00f3ff';
+        ctx.strokeRect(50, 50, canvas.width - 100, canvas.height - 100);
+
+        // Texto de Instruções
+        ctx.fillStyle = '#ffffff';
+        ctx.font = 'bold 24px Orbitron';
+        ctx.textAlign = 'center';
+        ctx.fillText('CALIBRANDO RASTREAMENTO FACIAL...', canvas.width / 2, canvas.height / 2 - 50);
+
+        ctx.font = '16px Inter';
+        ctx.fillStyle = '#a0aec0';
+        ctx.fillText('Por favor, olhe para o centro da tela e mantenha o rosto neutro', canvas.width / 2, canvas.height / 2 - 10);
+
+        // Barra de progresso
+        const progressPercent = Math.min(1.0, faceCalibrationFrames.length / FACE_CALIBRATION_TOTAL_FRAMES);
+        const barWidth = 300;
+        const barHeight = 12;
+        const bx = canvas.width / 2 - barWidth / 2;
+        const by = canvas.height / 2 + 30;
+
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.1)';
+        ctx.fillRect(bx, by, barWidth, barHeight);
+
+        ctx.fillStyle = '#00f3ff';
+        ctx.shadowBlur = 10;
+        ctx.shadowColor = '#00f3ff';
+        ctx.fillRect(bx, by, barWidth * progressPercent, barHeight);
+
+        ctx.restore();
+    } else if (gameRunning) {
+        // Indicador horizontal visual do olhar no rodapé
+        ctx.save();
+        const hudY = canvas.height - 25;
+        const barW = 200;
+        const hudX = canvas.width / 2 - barW / 2;
+
+        // Fundo cinza escuro
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.1)';
+        ctx.fillRect(hudX, hudY, barW, 6);
+
+        // Mapear gazeOffset (-0.12 a 0.12) para a largura do barW
+        const mappedOffset = Math.max(-0.12, Math.min(0.12, gazeOffset));
+        const indicatorX = hudX + barW / 2 + (mappedOffset / 0.12) * (barW / 2);
+
+        // Indicador central (neutro)
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
+        ctx.fillRect(canvas.width / 2 - 1, hudY - 3, 2, 12);
+
+        // Cursor do olhar
+        ctx.fillStyle = '#00f3ff';
+        ctx.shadowBlur = 10;
+        ctx.shadowColor = '#00f3ff';
+        ctx.beginPath();
+        ctx.arc(indicatorX, hudY + 3, 5, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Feedback de Tiro/Inclinação vertical
+        ctx.fillStyle = headLiftOffset > 0.022 ? '#00f3ff' : '#a0aec0';
+        ctx.font = 'bold 12px Orbitron';
+        ctx.textAlign = 'center';
+        ctx.fillText(`ATITUDE DE DISPARO: ${headLiftOffset > 0.022 ? 'ATIVADA 🔥' : 'NEUTRA'}`, canvas.width / 2, hudY - 12);
+
+        ctx.restore();
+    }
 }
 
 function draw() {
@@ -754,6 +909,10 @@ document.getElementById('startBtn').addEventListener('click', async () => {
     lastEnemySpawn = Date.now();
     updateScore();
     updateLives();
+
+    // Resetar calibração
+    faceCalibrating = true;
+    faceCalibrationFrames = [];
 });
 
 // Initial Render

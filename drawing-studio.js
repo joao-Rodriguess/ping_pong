@@ -7,13 +7,12 @@ const canvasCtx = canvasElement.getContext('2d');
 
 // Drawing State
 let isDrawing = false;
-let brushMode = 'neon'; // 'neon', 'rainbow', 'sparks', 'eraser'
-let currentColor = '#ff0055';
+let brushMode = 'neon'; // 'neon', 'rainbow', 'eraser'
+let currentColor = '#00f3ff'; // Iniciar com ciano
 let brushSize = 8;
 let lastPoint = null;
-
-// Sparks list
-const drawingSparks = [];
+let canvasSnapshot = null;
+let startLinePoint = null;
 
 // Set up initial canvas background
 ctx.fillStyle = '#0a0a12';
@@ -71,7 +70,6 @@ colorButtons.forEach(btn => {
 const brushModes = {
     neon: document.getElementById('brushNeon'),
     rainbow: document.getElementById('brushRainbow'),
-    sparks: document.getElementById('brushSparks'),
     eraser: document.getElementById('brushEraser')
 };
 
@@ -95,7 +93,6 @@ function setBrushMode(mode) {
 // Bind Brush Clicks
 if (brushModes.neon) brushModes.neon.addEventListener('click', () => setBrushMode('neon'));
 if (brushModes.rainbow) brushModes.rainbow.addEventListener('click', () => setBrushMode('rainbow'));
-if (brushModes.sparks) brushModes.sparks.addEventListener('click', () => setBrushMode('sparks'));
 if (brushModes.eraser) brushModes.eraser.addEventListener('click', () => setBrushMode('eraser'));
 
 // Iniciar com modo Neon ativo visualmente
@@ -205,49 +202,48 @@ function onResults(results) {
             currentColor = `hsl(${(Date.now() / 9) % 360}, 100%, 55%)`;
         }
 
-        // Executar desenho se estiver beliscando ou com punho fechado (apagando)
+                // Executar desenho se estiver beliscando ou com punho fechado (apagando)
         if (isPinching || handClosed) {
-            if (!isDrawing) {
-                isDrawing = true;
-                lastPoint = drawPoint;
-            } else {
-                ctx.save();
-                ctx.lineWidth = activeMode === 'eraser' ? brushSize * 2.5 : brushSize;
-                ctx.lineCap = 'round';
-                ctx.lineJoin = 'round';
-
-                if (activeMode === 'eraser') {
-                    // Borracha real que apaga para revelar a câmera de fundo!
+            if (activeMode === 'eraser') {
+                // Borracha livre (contínua)
+                if (!isDrawing) {
+                    isDrawing = true;
+                    lastPoint = drawPoint;
+                } else {
+                    ctx.save();
+                    ctx.lineWidth = brushSize * 2.5;
+                    ctx.lineCap = 'round';
+                    ctx.lineJoin = 'round';
                     ctx.globalCompositeOperation = 'destination-out';
                     ctx.beginPath();
                     ctx.moveTo(lastPoint.x, lastPoint.y);
                     ctx.lineTo(drawPoint.x, drawPoint.y);
                     ctx.stroke();
-                } else if (activeMode === 'sparks') {
-                    // Pincel de Faíscas! Adiciona partículas e desenha um traço leve
-                    ctx.strokeStyle = `rgba(255, 255, 255, 0.15)`;
-                    ctx.beginPath();
-                    ctx.moveTo(lastPoint.x, lastPoint.y);
-                    ctx.lineTo(drawPoint.x, drawPoint.y);
-                    ctx.stroke();
-
-                    // Adicionar partículas de faísca
-                    const sparksColor = currentColor;
-                    for (let k = 0; k < 2; k++) {
-                        drawingSparks.push(new DrawingSpark(drawPoint.x, drawPoint.y, sparksColor));
-                    }
+                    ctx.restore();
+                    lastPoint = drawPoint;
+                }
+            } else {
+                // Modo Linhas Retas (Neon ou Arco-íris)
+                if (!isDrawing) {
+                    isDrawing = true;
+                    startLinePoint = drawPoint;
+                    canvasSnapshot = ctx.getImageData(0, 0, canvas.width, canvas.height);
                 } else {
-                    // Neon e Arco-Íris
+                    // Restaurar o canvas para desenhar a linha temporária
+                    ctx.putImageData(canvasSnapshot, 0, 0);
+                    
+                    ctx.save();
+                    ctx.lineWidth = brushSize;
+                    ctx.lineCap = 'round';
                     ctx.strokeStyle = currentColor;
                     ctx.shadowBlur = brushSize * 1.8;
                     ctx.shadowColor = currentColor;
                     ctx.beginPath();
-                    ctx.moveTo(lastPoint.x, lastPoint.y);
+                    ctx.moveTo(startLinePoint.x, startLinePoint.y);
                     ctx.lineTo(drawPoint.x, drawPoint.y);
                     ctx.stroke();
+                    ctx.restore();
                 }
-                ctx.restore();
-                lastPoint = drawPoint;
             }
 
             // cursor visual desenhando
@@ -263,8 +259,29 @@ function onResults(results) {
             ctx.stroke();
             ctx.restore();
         } else {
-            isDrawing = false;
-            lastPoint = null;
+            // Se estava desenhando e soltou a pinça
+            if (isDrawing) {
+                isDrawing = false;
+                if (activeMode !== 'eraser' && startLinePoint && canvasSnapshot) {
+                    // Desenhar a linha final definitiva no canvas
+                    ctx.putImageData(canvasSnapshot, 0, 0);
+                    ctx.save();
+                    ctx.lineWidth = brushSize;
+                    ctx.lineCap = 'round';
+                    ctx.strokeStyle = currentColor;
+                    ctx.shadowBlur = brushSize * 1.8;
+                    ctx.shadowColor = currentColor;
+                    ctx.beginPath();
+                    ctx.moveTo(startLinePoint.x, startLinePoint.y);
+                    ctx.lineTo(drawPoint.x, drawPoint.y);
+                    ctx.stroke();
+                    ctx.restore();
+                    Sound.playBeep(800, 0.05); // Som sutil de confirmação
+                }
+                startLinePoint = null;
+                canvasSnapshot = null;
+                lastPoint = null;
+            }
 
             // cursor visual navegando (sem desenhar)
             ctx.save();
@@ -319,24 +336,8 @@ document.getElementById('startBtn').addEventListener('click', async () => {
     await camera.start();
 });
 
-// Loop para animar as faíscas continuamente por cima do canvas
+// Loop de animação simplificado
 function animationLoop() {
-    // Atualizar e desenhar as faíscas
-    if (drawingSparks.length > 0) {
-        // Desenhamos diretamente sobre o canvas de desenho para persistir ou apenas na tela?
-        // Se desenharmos no canvas, as faíscas ficam gravadas no desenho. Isso é legal!
-        ctx.save();
-        for (let i = drawingSparks.length - 1; i >= 0; i--) {
-            const spark = drawingSparks[i];
-            spark.update();
-            spark.draw(ctx);
-            if (spark.alpha <= 0) {
-                drawingSparks.splice(i, 1);
-            }
-        }
-        ctx.restore();
-    }
-
     requestAnimationFrame(animationLoop);
 }
 

@@ -28,6 +28,18 @@ let currentExpression = 'neutral';
 let expressionConfidenceBuffer = [];
 const BUFFER_SIZE = 5;
 
+// Parâmetros de calibração basal em tempo real
+let isCalibrating = true;
+let calibrationFrames = [];
+const CALIBRATION_TOTAL_FRAMES = 90; // Aprox. 3 segundos a 30fps
+
+let basalMetrics = {
+    eyeOpenness: 0.046,
+    smileMetric: 0.012,
+    mouthHeight: 0.040,
+    eyeToBrowDist: 0.118
+};
+
 class TearParticle {
     constructor(x, y) {
         this.x = x + (Math.random() - 0.5) * 6;
@@ -127,20 +139,52 @@ function analyzeExpression(landmarks) {
         getDistance3D(rightEyebrowInner, rightEyeCenter)
     ) / (2 * faceReference);
 
-    // Calculando Confianças das Emoções Baseadas em Limiares do CK+
-    // 1. Feliz: Mapeamento linear a partir do sorriso ativado (threshold: > 0.012, pico > 0.057)
-    let happyConf = Math.max(0, Math.min(100, Math.round((smileMetric - 0.012) * 2200)));
+    // FASE DE CALIBRAÇÃO ATIVA
+    if (isCalibrating) {
+        calibrationFrames.push({ eyeOpenness, smileMetric, mouthHeight, eyeToBrowDist });
+        
+        if (calibrationFrames.length >= CALIBRATION_TOTAL_FRAMES) {
+            let sumEyeOpen = 0, sumSmile = 0, sumMouthHeight = 0, sumEyeToBrow = 0;
+            calibrationFrames.forEach(f => {
+                sumEyeOpen += f.eyeOpenness;
+                sumSmile += f.smileMetric;
+                sumMouthHeight += f.mouthHeight;
+                sumEyeToBrow += f.eyeToBrowDist;
+            });
+            basalMetrics.eyeOpenness = sumEyeOpen / calibrationFrames.length;
+            basalMetrics.smileMetric = sumSmile / calibrationFrames.length;
+            basalMetrics.mouthHeight = sumMouthHeight / calibrationFrames.length;
+            basalMetrics.eyeToBrowDist = sumEyeToBrow / calibrationFrames.length;
+            isCalibrating = false;
+            Sound.playPowerup();
+        }
+
+        return {
+            expression: 'neutral',
+            confidence: 100,
+            confidences: { happy: 0, sad: 0, surprised: 0, angry: 0, neutral: 100 },
+            metrics: { eyeOpenness, mouthHeight, mouthWidth, smileMetric, eyeToBrowDist }
+        };
+    }
+
+    // CALCULANDO CONFIANÇAS BASEADAS NOS DESVIOS DA CALIBRAÇÃO BASAL
+    // 1. Feliz: Mapeamento a partir do desvio positivo do sorriso em relação ao repouso
+    let smileDiff = smileMetric - basalMetrics.smileMetric;
+    let happyConf = Math.max(0, Math.min(100, Math.round(smileDiff * 2500)));
     
-    // 2. Triste: Mapeamento linear a partir do sorriso de canto caído (threshold: < -0.008, pico < -0.048)
-    let sadConf = Math.max(0, Math.min(100, Math.round((-0.008 - smileMetric) * 2500)));
+    // 2. Triste: Mapeamento a partir do desvio negativo do sorriso (canto caído)
+    let sadConf = Math.max(0, Math.min(100, Math.round((-0.006 - smileDiff) * 3200)));
     
-    // 3. Surpreso: Olhos arregalados (> 0.046) e boca bem aberta verticalmente (> 0.04)
-    let eyeOpenBonus = Math.max(0, (eyeOpenness - 0.046) * 4000);
-    let mouthOpenBonus = Math.max(0, (mouthHeight - 0.04) * 1200);
-    let surprisedConf = Math.max(0, Math.min(100, Math.round(eyeOpenBonus * 0.45 + mouthOpenBonus * 0.55)));
+    // 3. Surpreso: Olhos mais abertos e boca mais alta do que o basal
+    let eyeOpenDiff = eyeOpenness - basalMetrics.eyeOpenness;
+    let mouthDiff = mouthHeight - basalMetrics.mouthHeight;
+    let surprisedConf = Math.max(0, Math.min(100, Math.round(
+        Math.max(0, eyeOpenDiff * 3800) * 0.45 + Math.max(0, mouthDiff * 1400) * 0.55
+    )));
     
-    // 4. Bravo: Distância sobrancelha-olho encolhendo devido ao franzido (repouso ~0.125, raiva < 0.118)
-    let angryConf = Math.max(0, Math.min(100, Math.round((0.118 - eyeToBrowDist) * 3500)));
+    // 4. Bravo: Franzido que encolhe a distância sobrancelha-olho em relação ao basal
+    let browDiff = basalMetrics.eyeToBrowDist - eyeToBrowDist;
+    let angryConf = Math.max(0, Math.min(100, Math.round(browDiff * 4500)));
 
     // Modificadores de exclusão mútua natural
     if (happyConf > 15) { sadConf = 0; angryConf = 0; }
@@ -480,7 +524,7 @@ function onResults(results) {
         const result = analyzeExpression(landmarks);
 
         // Troca de expressão sonora
-        if (result.expression !== currentExpression && result.confidence > 35) {
+        if (result.expression !== currentExpression && result.confidence > 35 && !isCalibrating) {
             currentExpression = result.expression;
             addToHistory(currentExpression);
             Sound.playBeep(700, 0.08); // Bipe ao mudar emoção
@@ -504,10 +548,54 @@ function onResults(results) {
         drawConnectors(ctx, mirroredLandmarks, FACEMESH_LEFT_EYE, { color: currentColor, lineWidth: 1.5 });
         drawConnectors(ctx, mirroredLandmarks, FACEMESH_LIPS, { color: currentColor, lineWidth: 1.5 });
 
-        // Desenhar Filtros AR na face!
-        drawARFilters(landmarks, result.expression);
+        // Desenhar Filtros AR na face se NÃO estiver calibrando
+        if (!isCalibrating) {
+            drawARFilters(landmarks, result.expression);
+        }
 
         ctx.restore();
+
+        // TELA DE CALIBRAÇÃO NEON PREMIUM
+        if (isCalibrating) {
+            const percent = Math.round((calibrationFrames.length / CALIBRATION_TOTAL_FRAMES) * 100);
+            ctx.save();
+            // Escurecer fundo com transparência
+            ctx.fillStyle = 'rgba(5, 5, 8, 0.75)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Círculo de progresso em repouso
+            ctx.strokeStyle = 'rgba(0, 217, 255, 0.15)';
+            ctx.lineWidth = 6;
+            ctx.beginPath();
+            ctx.arc(canvas.width / 2, canvas.height / 2, 60, 0, Math.PI * 2);
+            ctx.stroke();
+            
+            ctx.strokeStyle = '#00d9ff';
+            ctx.shadowBlur = 15;
+            ctx.shadowColor = '#00d9ff';
+            ctx.lineWidth = 6;
+            ctx.beginPath();
+            ctx.arc(canvas.width / 2, canvas.height / 2, 60, -Math.PI / 2, (-Math.PI / 2) + (Math.PI * 2 * (percent / 100)));
+            ctx.stroke();
+            
+            // Texto central de porcentagem
+            ctx.fillStyle = '#ffffff';
+            ctx.font = 'bold 20px Orbitron';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(`${percent}%`, canvas.width / 2, canvas.height / 2);
+            
+            // Título superior
+            ctx.fillStyle = '#00d9ff';
+            ctx.font = 'bold 20px Orbitron';
+            ctx.fillText('🧪 LAB: CALIBRANDO ROSTO...', canvas.width / 2, canvas.height / 2 - 95);
+            
+            // Subtítulo
+            ctx.fillStyle = 'rgba(241, 243, 245, 0.7)';
+            ctx.font = '14px Inter';
+            ctx.fillText('Olhe para a câmera e mantenha o rosto neutro e relaxado', canvas.width / 2, canvas.height / 2 + 95);
+            ctx.restore();
+        }
     }
 
     // Desenhar e atualizar lágrimas fora da malha
