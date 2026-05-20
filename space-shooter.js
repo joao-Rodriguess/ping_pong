@@ -8,7 +8,7 @@ const canvasCtx = canvasElement.getContext('2d');
 // Game State
 let gameRunning = false;
 let score = 0;
-let lives = 3;
+let lives = 5;
 let lastShootTime = 0;
 const SHOOT_COOLDOWN = 250; // ms
 
@@ -28,7 +28,7 @@ const player = {
     width: 45,
     height: 45,
     color: '#00f3ff',
-    speed: 8
+    speed: 16
 };
 
 // Lists
@@ -40,7 +40,7 @@ let activeBoss = null;
 
 // Constants
 const BULLET_SPEED = 11;
-const ENEMY_BULLET_SPEED = 5;
+const ENEMY_BULLET_SPEED = 3.5;
 const POWERUP_SPEED = 3;
 const ENEMY_SPAWN_INTERVAL = 1400; // ms
 let lastEnemySpawn = 0;
@@ -187,12 +187,12 @@ class Enemy {
         this.type = type; // 'basic' ou 'fast' (zigue-zague)
         
         if (this.type === 'fast') {
-            this.speed = Math.random() * 2 + 4.5;
+            this.speed = Math.random() * 0.8 + 1.6;
             this.color = '#ffff00'; // Amarelo Neon
             this.startX = this.x;
             this.angle = 0;
         } else {
-            this.speed = Math.random() * 2 + 2;
+            this.speed = Math.random() * 0.6 + 0.9;
             this.color = '#ff0055'; // Vermelho Neon
         }
     }
@@ -445,6 +445,7 @@ function shoot() {
 }
 
 function spawnEnemy() {
+    if (faceCalibrating) return; // Não spawna inimigos até que a calibração do rosto termine!
     const now = Date.now();
     // Apenas spawna inimigos se o chefão não estiver ativo
     if (!activeBoss && now - lastEnemySpawn > ENEMY_SPAWN_INTERVAL) {
@@ -901,7 +902,7 @@ document.getElementById('startBtn').addEventListener('click', async () => {
 
     gameRunning = true;
     score = 0;
-    lives = 3;
+    lives = 5;
     shieldActive = false;
     doubleLaserActive = false;
     activeBoss = null;
