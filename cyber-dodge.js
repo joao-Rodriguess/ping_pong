@@ -10,6 +10,7 @@ let gameRunning = false;
 let score = 0;
 let lives = 3;
 const particleManager = new ParticleManager();
+let lastTouchTime = 0; // Timestamp do último toque para priorizar touch no mobile
 
 // Player Avatar
 const player = {
@@ -137,6 +138,11 @@ class Crystal {
 }
 
 function processFaceControl(landmarks) {
+    // Se o usuário tocou recentemente na tela (últimos 2 segundos), ignora o controle facial temporariamente
+    if (Date.now() - lastTouchTime < 2000) {
+        return;
+    }
+
     if (!landmarks || landmarks.length < 478) {
         landmarksDetected = false;
         return;
@@ -213,7 +219,8 @@ const camera = new Camera(videoElement, {
         await faceMesh.send({ image: videoElement });
     },
     width: 640,
-    height: 480
+    height: 480,
+    facingMode: 'user'
 });
 
 // Game loops
@@ -223,7 +230,7 @@ function triggerScreenShake() {
 }
 
 function updatePlayer() {
-    if (landmarksDetected && !faceCalibrating) {
+    if ((landmarksDetected && !faceCalibrating) || (Date.now() - lastTouchTime < 2000)) {
         // Interpolar suavemente para evitar tremulações (lerp de 0.20)
         player.x += (player.targetX - player.x) * 0.20;
     }
@@ -515,6 +522,36 @@ document.getElementById('startBtn').addEventListener('click', async () => {
     faceCalibrating = true;
     faceCalibrationFrames.length = 0;
 });
+
+// Eventos de Toque para Mobile (arrastar o dedo para mover horizontalmente)
+const handleTouch = (e) => {
+    if (!gameRunning) return;
+    
+    // Se o usuário tocar no celular durante a calibração, assume controle por toque e encerra calibração
+    if (faceCalibrating) {
+        faceCalibrating = false;
+        Sound.playPowerup();
+    }
+    
+    lastTouchTime = Date.now();
+    
+    const rect = canvas.getBoundingClientRect();
+    const touch = e.touches[0];
+    const scaleX = canvas.width / rect.width;
+    const x = (touch.clientX - rect.left) * scaleX;
+    
+    player.targetX = Math.max(player.width / 2 + 10, Math.min(canvas.width - player.width / 2 - 10, x));
+};
+
+canvas.addEventListener('touchstart', (e) => {
+    e.preventDefault();
+    handleTouch(e);
+}, { passive: false });
+
+canvas.addEventListener('touchmove', (e) => {
+    e.preventDefault();
+    handleTouch(e);
+}, { passive: false });
 
 // Renderização inicial
 draw();

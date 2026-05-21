@@ -11,6 +11,7 @@ let score = 0;
 let lives = 5;
 let lastShootTime = 0;
 const SHOOT_COOLDOWN = 250; // ms
+let lastTouchTime = 0; // Timestamp do último toque para priorizar touch no mobile
 
 // Powerup States
 let shieldActive = false;
@@ -73,6 +74,11 @@ function getDistance3D(p1, p2) {
 }
 
 function processFaceControl(landmarks) {
+    // Se o usuário tocou recentemente na tela (últimos 2 segundos), ignora o controle facial temporariamente
+    if (Date.now() - lastTouchTime < 2000) {
+        return;
+    }
+
     if (!landmarks || landmarks.length < 478) {
         landmarksDetected = false;
         isShooting = false;
@@ -162,7 +168,8 @@ const camera = new Camera(videoElement, {
         await faceMesh.send({ image: videoElement });
     },
     width: 640,
-    height: 480
+    height: 480,
+    facingMode: 'user'
 });
 
 // Classes
@@ -391,7 +398,7 @@ function triggerScreenShake() {
 }
 
 function updatePlayer() {
-    if (landmarksDetected && !faceCalibrating) {
+    if ((landmarksDetected && !faceCalibrating) || (Date.now() - lastTouchTime < 2000)) {
         // Interpolar suavemente para evitar tremulações, igual ao Cyber Dodge!
         player.x += (player.targetX - player.x) * 0.20;
     }
@@ -897,6 +904,41 @@ document.getElementById('startBtn').addEventListener('click', async () => {
     // Resetar calibração
     faceCalibrating = true;
     faceCalibrationFrames = [];
+});
+
+// Eventos de Toque para Mobile (arrastar o dedo para mover horizontalmente e atirar automaticamente)
+const handleTouch = (e) => {
+    if (!gameRunning) return;
+    
+    // Se o usuário tocar no celular durante a calibração, assume controle por toque e encerra calibração
+    if (faceCalibrating) {
+        faceCalibrating = false;
+        Sound.playPowerup();
+    }
+    
+    lastTouchTime = Date.now();
+    isShooting = true; // Ativa tiro automático no toque
+    
+    const rect = canvas.getBoundingClientRect();
+    const touch = e.touches[0];
+    const scaleX = canvas.width / rect.width;
+    const x = (touch.clientX - rect.left) * scaleX;
+    
+    player.targetX = Math.max(player.width / 2 + 10, Math.min(canvas.width - player.width / 2 - 10, x));
+};
+
+canvas.addEventListener('touchstart', (e) => {
+    e.preventDefault();
+    handleTouch(e);
+}, { passive: false });
+
+canvas.addEventListener('touchmove', (e) => {
+    e.preventDefault();
+    handleTouch(e);
+}, { passive: false });
+
+canvas.addEventListener('touchend', () => {
+    isShooting = false; // Parar de atirar ao soltar
 });
 
 // Initial Render

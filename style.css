@@ -269,6 +269,26 @@ canvas {
     backdrop-filter: blur(10px);
 }
 
+/* Lives Display */
+.lives-display {
+    position: fixed;
+    top: 6.5rem;
+    right: 2rem;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #ff0055;
+    z-index: 1000;
+    text-shadow: 0 0 10px rgba(255, 0, 85, 0.6);
+    background: rgba(0, 0, 0, 0.5);
+    padding: 0.7rem 1.5rem;
+    border-radius: 10px;
+    border: 2px solid rgba(255, 0, 85, 0.3);
+    backdrop-filter: blur(10px);
+    transition: all 0.3s;
+}
+
+
 /* Controls Overlay */
 .controls-overlay {
     position: fixed;
@@ -414,27 +434,222 @@ canvas {
 }
 
 /* Responsive Design */
+@media (max-width: 992px) {
+    /* Canvas & Game Wrapper */
+    .game-wrapper {
+        width: 100%;
+        max-width: 100%;
+        padding: 0.5rem;
+        border-radius: 12px;
+        margin: 0 auto;
+        box-shadow: 0 0 20px rgba(0, 0, 0, 0.4);
+    }
+
+    canvas {
+        width: 100% !important;
+        max-width: 100% !important;
+        height: auto !important;
+        aspect-ratio: 4 / 3;
+        object-fit: contain;
+    }
+
+    /* Ocultar preview bruto de webcam redundante em telas pequenas */
+    .video-preview,
+    .sidebar-right .video-preview {
+        display: none !important;
+    }
+
+    /* Colunas laterais passam a ser em bloco flexível abaixo do canvas */
+    .sidebar-left,
+    .sidebar-right {
+        position: relative !important;
+        left: auto !important;
+        right: auto !important;
+        top: auto !important;
+        bottom: auto !important;
+        width: 100% !important;
+        max-width: 800px !important;
+        margin: 1.5rem auto 0 auto !important;
+        display: flex !important;
+        flex-direction: row !important;
+        flex-wrap: wrap !important;
+        gap: 1rem !important;
+        z-index: 10 !important;
+        height: auto !important;
+        overflow-y: visible !important;
+    }
+
+    /* Painéis das colunas ocupam espaço equivalente responsivo */
+    .sidebar-left > div,
+    .sidebar-right > div,
+    .expression-analysis-panel,
+    .scientific-calibration-panel,
+    .history-panel {
+        flex: 1 1 280px !important;
+        width: auto !important;
+        max-width: 100% !important;
+        margin-bottom: 0 !important;
+        border-radius: 10px !important;
+        padding: 1rem !important;
+    }
+
+    /* Botão de disparo de selfie do Cyber Photo Booth no celular */
+    .booth-capture-container {
+        position: relative !important;
+        bottom: auto !important;
+        left: auto !important;
+        transform: none !important;
+        margin: 1.5rem auto 0 auto !important;
+        width: 100% !important;
+        max-width: 320px !important;
+        z-index: 1001 !important;
+    }
+    
+    .booth-capture-container button {
+        width: 100% !important;
+    }
+}
+
 @media (max-width: 768px) {
+    .landing-container {
+        padding: 1.5rem 1rem;
+    }
+
+    .landing-header {
+        margin-bottom: 2rem;
+    }
+
     .landing-header h1 {
-        font-size: 2.5rem;
+        font-size: 2.2rem;
+    }
+
+    .landing-header p {
+        font-size: 1rem;
     }
 
     .games-grid {
         grid-template-columns: 1fr;
+        gap: 1.2rem;
+    }
+
+    .game-card {
+        padding: 1.2rem;
+        border-radius: 15px;
+    }
+
+    .game-card h2 {
+        font-size: 1.4rem;
+    }
+
+    .game-card p {
+        font-size: 0.9rem;
+        margin-bottom: 0.8rem;
+    }
+
+    .game-container {
+        padding: 1rem 0.5rem;
     }
 
     .game-header h1 {
-        font-size: 2rem;
+        font-size: 1.8rem;
+        text-align: center;
     }
 
-    .score-display {
-        font-size: 1.5rem;
-        padding: 0.7rem 1.5rem;
+    /* Back Button no Mobile - Posicionamento flexível acima */
+    .back-button {
+        position: relative !important;
+        top: auto !important;
+        left: auto !important;
+        display: block !important;
+        margin: 0.5rem auto 1rem auto !important;
+        padding: 0.5rem 1.2rem !important;
+        font-size: 0.85rem !important;
+        width: fit-content;
+        z-index: 1000 !important;
     }
 
-    .video-preview {
-        width: 160px;
-        height: 120px;
+    /* Displays de Placar e Vidas flutuando menos ou em fileira acima do canvas */
+    .score-display,
+    .lives-display {
+        position: relative !important;
+        top: auto !important;
+        right: auto !important;
+        left: auto !important;
+        bottom: auto !important;
+        display: inline-block !important;
+        font-size: 1.1rem !important;
+        padding: 0.5rem 1rem !important;
+        margin: 0.3rem !important;
+        border-width: 1px !important;
+        border-radius: 8px !important;
+        vertical-align: middle !important;
+        text-align: center !important;
+    }
+
+    /* Garantir que fiquem alinhados centralizados */
+    .game-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    /* Overlay de Controles */
+    .controls-overlay {
+        position: relative !important;
+        bottom: auto !important;
+        left: auto !important;
+        transform: none !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        margin: 1.5rem auto 0 auto !important;
+        padding: 1.2rem 1rem !important;
+        border-radius: 12px !important;
+        box-sizing: border-box !important;
+    }
+
+    .controls-overlay h3 {
+        font-size: 1.1rem;
+    }
+
+    .controls-overlay p {
+        font-size: 0.85rem;
+    }
+
+    .btn {
+        padding: 0.8rem 1.5rem;
+        font-size: 0.95rem;
+    }
+
+    /* Boss UI de vida no Mobile */
+    .boss-health-bar-container {
+        position: relative !important;
+        top: auto !important;
+        left: auto !important;
+        transform: none !important;
+        width: 100% !important;
+        max-width: 320px !important;
+        margin: 0.5rem auto 1rem auto !important;
+        border-radius: 6px !important;
+    }
+
+    /* Expression Display (Emoji Gigante no Face Detector) */
+    .expression-display {
+        font-size: 4rem !important;
+        width: auto !important;
+        height: auto !important;
+    }
+
+    .expression-display #emoji {
+        font-size: 4.5rem !important;
+    }
+
+    .expression-label {
+        font-size: 1.3rem !important;
+    }
+
+    #expressionDisplay #confidence {
+        font-size: 0.85rem !important;
+        margin-top: 0.5rem !important;
     }
 }
 

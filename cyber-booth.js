@@ -788,7 +788,8 @@ const camera = new Camera(videoElement, {
         await faceMesh.send({ image: videoElement });
     },
     width: 640,
-    height: 480
+    height: 480,
+    facingMode: 'user'
 });
 
 // Inicialização da câmera
